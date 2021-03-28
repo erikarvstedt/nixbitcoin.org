@@ -57,13 +57,12 @@ in {
     ];
     nix-bitcoin.netns-isolation.services.btcpayserver.connections = [ "nginx" ];
     nix-bitcoin.netns-isolation.services.joinmarket-ob-watcher.connections = [ "nginx" ];
+
     # Allow connections from outside netns
-    systemd.services.nginx.serviceConfig = {
-      ExecStartPost = "${nbLib.privileged "nginx-netns-hop" ''
-        ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables -A INPUT -p TCP --dport 80 -j ACCEPT
-        ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables -A INPUT -p TCP --dport 443 -j ACCEPT
-      ''}";
-    };
+    systemd.services.netns-nginx.postStart = ''
+      ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables \
+        -w -A INPUT -p TCP -m multiport --dports 80,443 -j ACCEPT
+    '';
 
     security.acme = {
       email = "nixbitcoin@i2pmail.org";
