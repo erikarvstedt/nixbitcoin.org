@@ -4,17 +4,11 @@ with lib;
 
 let
   cfg = config.nix-bitcoin-org.website;
-  nbLib = config.nix-bitcoin.lib;
-  indexFile = ./index.html;
-  devkeys = ./devkeys.html;
-  files = ./files;
-  createWebsite = pkgs.writeText "make-index.sh" ''
-    set -e
-    cp ${indexFile} /var/www/index.html
-    cp ${devkeys} /var/www/devkeys.html
-    cp ${files}/* /var/www/files
-    chown -R nginx:nginx /var/www/
-  '';
+
+  nginxAddress = if config.nix-bitcoin.netns-isolation.enable then
+    config.nix-bitcoin.netns-isolation.netns.nginx.address
+  else
+    "localhost";
 in {
   options.nix-bitcoin-org.website = {
     enable = mkEnableOption "nix-bitcoin.org website";
@@ -31,8 +25,8 @@ in {
   config = mkIf cfg.enable {
 
     systemd.tmpfiles.rules = [
-      "d /var/www 0750 nginx nginx - -"
-      "d /var/www/files 0750 nginx nginx - -"
+      # Create symlink to static website content
+      "L+ /var/www - - - - ${./static}"
     ];
 
     networking.nat = {
@@ -117,22 +111,6 @@ in {
         port = 443; toHost = cfg.host;
       }];
       version = 3;
-    };
-
-    systemd.services.create-webpage = {
-      wantedBy = [ "multi-user.target" ];
-      serviceConfig = nbLib.defaultHardening // {
-        ExecStart="${pkgs.bash}/bin/bash ${createWebsite}";
-        User = "root";
-        Type = "simple";
-        RemainAfterExit="yes";
-        Restart = "on-failure";
-        RestartSec = "10s";
-        PrivateNetwork = "true"; # This service needs no network access
-        PrivateUsers = "false";
-        ReadWritePaths = "/var/www";
-        CapabilityBoundingSet = "CAP_SETUID CAP_SETGID CAP_SETPCAP CAP_SYS_ADMIN CAP_CHOWN CAP_FSETID CAP_SETFCAP CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH CAP_FOWNER CAP_IPC_OWNER";
-      };
     };
   };
 }
