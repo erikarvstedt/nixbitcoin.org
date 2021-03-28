@@ -1,11 +1,36 @@
-{ config, pkgs, lib, ... }: {
+{ config, pkgs, lib, ... }:
+let
+cfg = {
   imports = [
     <nix-bitcoin/modules/presets/secure-node.nix>
-    ./nix-bitcoin-org
-    ./hardware-configuration.nix
     <nix-bitcoin/modules/presets/hardened.nix>
+
+    ./hardware-configuration.nix
+    ./nix-bitcoin-org
+    base
+    services
+  ];
+};
+
+base = {
+  networking.hostName = "nixbitcoin-org";
+  time.timeZone = "UTC";
+
+  services.openssh.enable = true;
+  users.users.root = {
+    openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAO3kpItIalS3HHzqLRnXXFVRFtckuwE1FmytQ4HTh9u" ];
+  };
+
+  environment.systemPackages = with pkgs; [
+    vim
   ];
 
+  system.stateVersion = "20.09";
+
+  nix-bitcoin.configVersion = "0.0.41";
+};
+
+services = {
   nix-bitcoin.onionServices.bitcoind.public = true;
 
   services.clightning = {
@@ -30,24 +55,10 @@
   services.joinmarket = {
     enable = true;
     yieldgenerator.enable = true;
-  }
+  };
   services.joinmarket-ob-watcher.enable = true;
 
   services.nix-bitcoin-org.enable = true;
-
-  networking.hostName = "nixbitcoin-org";
-  time.timeZone = "UTC";
-
-  services.openssh.enable = true;
-  users.users.root = {
-    openssh.authorizedKeys.keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAO3kpItIalS3HHzqLRnXXFVRFtckuwE1FmytQ4HTh9u" ];
-  };
-
-  environment.systemPackages = with pkgs; [
-    vim
-  ];
-
-  system.stateVersion = "20.09";
-
-  nix-bitcoin.configVersion = "0.0.41";
-}
+};
+in
+  cfg
