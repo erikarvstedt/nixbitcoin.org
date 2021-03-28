@@ -14,13 +14,31 @@ let
   nix-bitcoin-unpacked = (import <nixpkgs> {}).runCommand "nix-bitcoin-src" {} ''
     mkdir $out; tar xf ${builtins.fetchurl nix-bitcoin-release} -C $out
   '';
+
+  # Implement these as scripts instead of shell functions so they can be run from a
+  # container shell.
+  # This allows updating a running container via command 'container'.
+  scripts = with pkgs; symlinkJoin {
+    name = "scripts";
+    paths = [
+      (pkgs.writeScriptBin "run-node" ''
+        scenarioOverridesFile=${toString ./scenarios.nix} \
+          exec ${toString nix-bitcoin-path}/test/run-tests.sh "$@"
+      '')
+
+      # Run node in a container. (Requires root privileges.)
+      (pkgs.writeScriptBin "container" ''
+        exec run-node -s nixbitcoinorg-container container "$@"
+      '')
+    ];
+  };
 in
 with pkgs;
 
 stdenv.mkDerivation rec {
   name = "nix-bitcoin-environment";
 
-  path = lib.makeBinPath [ nix-bitcoin.extra-container ];
+  path = lib.makeBinPath [ scripts ];
 
   shellHook = ''
     export NIX_PATH="nixpkgs=${nixpkgs-path}:nix-bitcoin=${toString nix-bitcoin-path}:."
@@ -35,6 +53,23 @@ stdenv.mkDerivation rec {
       # the target machine
       chmod 700 ${toString ./secrets}
       $(nix-build --no-out-link ${toString ./krops/deploy.nix})
+    }
+
+    # Run node in a VM.
+    # Hint: Run command 'q' in the VM for instant poweroff.
+    vm() {
+      run-node -s nixbitcoinorg-non-hardened vm "$@"
+    }
+
+    # Run node in a VM, without disabling the performance-decreasing hardened preset
+    vm-hardened() {
+      run-node -s nixbitcoinorg vm "$@"
+    }
+
+    # Launch the node in a container, render the website as text, shutdown node.
+    # (Requires root privileges.)
+    website() {
+      container --run bash -c '${lynx}/bin/lynx $ip -dump'
     }
 
     # Print logo if
