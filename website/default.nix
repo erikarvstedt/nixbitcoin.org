@@ -12,14 +12,6 @@ let
 in {
   options.nix-bitcoin-org.website = {
     enable = mkEnableOption "nix-bitcoin.org website";
-    host = mkOption {
-      type = types.str;
-      default = if config.nix-bitcoin.netns-isolation.enable then
-        config.nix-bitcoin.netns-isolation.netns.nginx.address
-      else
-        "localhost";
-      description = "HTTP server listen address.";
-    };
   };
 
   config = mkIf cfg.enable (mkMerge [
@@ -82,9 +74,9 @@ in {
 
     services.tor.hiddenServices.nginx = {
       map = [{
-        port = 80; toHost = cfg.host;
+        port = 80; toHost = nginxAddress;
       } {
-        port = 443; toHost = cfg.host;
+        port = 443; toHost = nginxAddress;
       }];
       version = 3;
     };
@@ -98,12 +90,12 @@ in {
       externalInterface = "enp2s0";
       forwardPorts = [
         {
-          destination = "169.254.1.21:80";
+          destination = "${nginxAddress}:80";
           proto = "tcp";
           sourcePort = 80;
         }
         {
-          destination = "169.254.1.21:443";
+          destination = "${nginxAddress}:443";
           proto = "tcp";
           sourcePort = 443;
         }
