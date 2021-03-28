@@ -3,7 +3,7 @@
 with lib;
 
 let
-  cfg = config.services.nix-bitcoin-org;
+  cfg = config.nix-bitcoin-org.website;
   nbLib = config.nix-bitcoin.lib;
   indexFile = ./index.html;
   devkeys = ./devkeys.html;
@@ -16,14 +16,8 @@ let
     chown -R nginx:nginx /var/www/
   '';
 in {
-  options.services.nix-bitcoin-org = {
-    enable = mkOption {
-      type = types.bool;
-      default = false;
-      description = ''
-        If enabled, the nix-bitcoin.org service will be installed.
-      '';
-    };
+  options.nix-bitcoin-org.website = {
+    enable = mkEnableOption "nix-bitcoin.org website";
     host = mkOption {
       type = types.str;
       default = if config.nix-bitcoin.netns-isolation.enable then

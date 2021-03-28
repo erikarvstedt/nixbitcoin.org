@@ -6,7 +6,7 @@ cfg = {
     <nix-bitcoin/modules/presets/hardened.nix>
 
     ./hardware-configuration.nix
-    ./nix-bitcoin-org
+    ./website
     base
     services
   ];
@@ -58,7 +58,7 @@ services = {
   };
   services.joinmarket-ob-watcher.enable = true;
 
-  services.nix-bitcoin-org.enable = true;
+  nix-bitcoin-org.website.enable = true;
 };
 in
   cfg
