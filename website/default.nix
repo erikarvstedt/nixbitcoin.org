@@ -82,6 +82,7 @@ in {
   (mkIf config.nix-bitcoin.netns-isolation.enable {
     nix-bitcoin.netns-isolation.services.nginx.connections = [ "btcpayserver" "joinmarket-ob-watcher" ];
 
+    # Forward HTTP(S) connections to the namespaced nginx address
     networking.nat = {
       enable = true;
       externalInterface = "enp2s0";
@@ -99,7 +100,7 @@ in {
       ];
     };
 
-    # Allow connections from outside netns
+    # Allow HTTP(S) connections to nginx from outside netns
     systemd.services.netns-nginx.postStart = ''
       ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables \
         -w -A INPUT -p TCP -m multiport --dports 80,443 -j ACCEPT
