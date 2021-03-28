@@ -9,6 +9,11 @@ let
     config.nix-bitcoin.netns-isolation.netns.nginx.address
   else
     "localhost";
+
+  serviceAddress = service:
+    with config.services.${service};
+    "${address}:${toString port}";
+
 in {
   options.nix-bitcoin-org.website = {
     enable = mkEnableOption "nix-bitcoin.org website";
@@ -31,7 +36,21 @@ in {
       acceptTerms = true;
     };
 
-    services.nginx = {
+    services.nginx = let
+      hostConfig = {
+        root = "/var/www";
+        locations."/btcpayserver/" = {
+          proxyPass = "http://${serviceAddress "btcpayserver"}";
+        };
+        extraConfig = ''
+          location /obwatcher/ {
+            proxy_pass http://${serviceAddress "joinmarket-ob-watcher"};
+            rewrite /obwatcher/(.*) /$1 break;
+          }
+          add_header Onion-Location http://qvzlxbjvyrhvsuyzz5t63xx7x336dowdvt7wfj53sisuun4i4rdtbzid.onion$request_uri;
+        '';
+      };
+    in {
       enable = true;
       recommendedProxySettings = true;
       recommendedGzipSettings = true;
@@ -41,33 +60,11 @@ in {
         # Disable the access log for user privacy
         access_log off;
       '';
-      virtualHosts."nixbitcoin.org" = {
+      virtualHosts."nixbitcoin.org" = hostConfig // {
         forceSSL = true;
-        root = "/var/www";
         enableACME = true;
-        locations."/btcpayserver/" = {
-          proxyPass = "http://169.254.1.24:23000";
-        };
-        extraConfig = ''
-          location /obwatcher/ {
-            proxy_pass http://${toString config.services.joinmarket-ob-watcher.address}:${toString config.services.joinmarket-ob-watcher.port};
-            rewrite /obwatcher/(.*) /$1 break;
-          }
-          add_header Onion-Location http://qvzlxbjvyrhvsuyzz5t63xx7x336dowdvt7wfj53sisuun4i4rdtbzid.onion$request_uri;
-        '';
       };
-      virtualHosts."_" = {
-        root = "/var/www";
-        locations."/btcpayserver/" = {
-          proxyPass = "http://169.254.1.24:23000";
-        };
-        extraConfig = ''
-          location /obwatcher/ {
-            proxy_pass http://${toString config.services.joinmarket-ob-watcher.address}:${toString config.services.joinmarket-ob-watcher.port};
-            rewrite /obwatcher/(.*) /$1 break;
-          }
-        '';
-      };
+      virtualHosts."_" = hostConfig;
     };
 
     services.btcpayserver.rootpath = "btcpayserver";
