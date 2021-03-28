@@ -39,7 +39,7 @@ in {
     services.nginx = let
       hostConfig = {
         root = "/var/www";
-        locations."/btcpayserver/" = {
+        locations."/btcpayserver/apps/" = {
           proxyPass = "http://${serviceAddress "btcpayserver"}";
         };
         extraConfig = ''
