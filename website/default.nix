@@ -22,46 +22,23 @@ in {
     };
   };
 
-  config = mkIf cfg.enable {
-
+  config = mkIf cfg.enable (mkMerge [
+  {
     systemd.tmpfiles.rules = [
       # Create symlink to static website content
       "L+ /var/www - - - - ${./static}"
     ];
 
-    networking.nat = {
-      enable = true;
-      externalInterface = "enp2s0";
-      forwardPorts = [
-        {
-          destination = "169.254.1.21:80";
-          proto = "tcp";
-          sourcePort = 80;
-        }
-        {
-          destination = "169.254.1.21:443";
-          proto = "tcp";
-          sourcePort = 443;
-        }
-      ];
-    };
     networking.firewall.allowedTCPPorts = [
       80
       443
     ];
-    nix-bitcoin.netns-isolation.services.btcpayserver.connections = [ "nginx" ];
-    nix-bitcoin.netns-isolation.services.joinmarket-ob-watcher.connections = [ "nginx" ];
-
-    # Allow connections from outside netns
-    systemd.services.netns-nginx.postStart = ''
-      ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables \
-        -w -A INPUT -p TCP -m multiport --dports 80,443 -j ACCEPT
-    '';
 
     security.acme = {
       email = "nixbitcoin@i2pmail.org";
       acceptTerms = true;
     };
+
     services.nginx = {
       enable = true;
       recommendedProxySettings = true;
@@ -100,7 +77,6 @@ in {
         '';
       };
     };
-    systemd.services."acme-nixbitcoin.org".serviceConfig.NetworkNamespacePath = "/var/run/netns/nb-nginx";
 
     services.btcpayserver.rootpath = "btcpayserver";
 
@@ -112,5 +88,36 @@ in {
       }];
       version = 3;
     };
-  };
+  }
+
+  (mkIf config.nix-bitcoin.netns-isolation.enable {
+    networking.nat = {
+      enable = true;
+      externalInterface = "enp2s0";
+      forwardPorts = [
+        {
+          destination = "169.254.1.21:80";
+          proto = "tcp";
+          sourcePort = 80;
+        }
+        {
+          destination = "169.254.1.21:443";
+          proto = "tcp";
+          sourcePort = 443;
+        }
+      ];
+    };
+
+    nix-bitcoin.netns-isolation.services.btcpayserver.connections = [ "nginx" ];
+    nix-bitcoin.netns-isolation.services.joinmarket-ob-watcher.connections = [ "nginx" ];
+
+    # Allow connections from outside netns
+    systemd.services.netns-nginx.postStart = ''
+      ${pkgs.iproute}/bin/ip netns exec nb-nginx ${config.networking.firewall.package}/bin/iptables \
+        -w -A INPUT -p TCP -m multiport --dports 80,443 -j ACCEPT
+    '';
+
+    systemd.services."acme-nixbitcoin.org".serviceConfig.NetworkNamespacePath = "/var/run/netns/nb-nginx";
+  })
+  ]);
 }
