@@ -91,6 +91,8 @@ in {
   }
 
   (mkIf config.nix-bitcoin.netns-isolation.enable {
+    nix-bitcoin.netns-isolation.services.nginx.connections = [ "btcpayserver" "joinmarket-ob-watcher" ];
+
     networking.nat = {
       enable = true;
       externalInterface = "enp2s0";
@@ -107,9 +109,6 @@ in {
         }
       ];
     };
-
-    nix-bitcoin.netns-isolation.services.btcpayserver.connections = [ "nginx" ];
-    nix-bitcoin.netns-isolation.services.joinmarket-ob-watcher.connections = [ "nginx" ];
 
     # Allow connections from outside netns
     systemd.services.netns-nginx.postStart = ''
