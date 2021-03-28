@@ -90,13 +90,13 @@ in {
       externalInterface = "enp2s0";
       forwardPorts = [
         {
-          destination = "${nginxAddress}:80";
           proto = "tcp";
+          destination = "${nginxAddress}:80";
           sourcePort = 80;
         }
         {
-          destination = "${nginxAddress}:443";
           proto = "tcp";
+          destination = "${nginxAddress}:443";
           sourcePort = 443;
         }
       ];
