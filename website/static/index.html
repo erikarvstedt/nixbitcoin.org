@@ -25,12 +25,12 @@
       }
 
       body {
-          color: #444;
-          padding: 10px 10px;
-          margin: 20px auto;
-          font-size: 1.0rem;
-          max-width: 800px;
-          font-family: sans;
+        color: #444;
+        padding: 10px 10px;
+        margin: 20px auto;
+        font-size: 1.0rem;
+        max-width: 800px;
+        font-family: sans;
       }
       .datatable {
         font-family: monospace;
@@ -45,29 +45,29 @@
         padding-right: 10px;
       }
       code {
-	  background-color: #eee;
-	  border: 1px solid #999;
-	  max-width: 800px;
-	  display: block;
-	  padding: 20px;
-	  word-wrap: break-word;
-	  font-size: 0.8rem;
+        background-color: #eee;
+        border: 1px solid #999;
+        max-width: 800px;
+        display: block;
+        padding: 20px;
+        word-wrap: break-word;
+        font-size: 0.8rem;
       }
     </style>
   </head>
   <body>
     <h1>nix-bitcoin
       <img
-	align=right
-	width="100"
-	src="files/nix-bitcoin-logo.png"
-	alt="nix-bitcoin logo">
+        align=right
+        width="100"
+        src="files/nix-bitcoin-logo.png"
+        alt="nix-bitcoin logo">
     </h1>
     <ul class="socials">
-        <li><a href="https://github.com/fort-nix/nix-bitcoin"><img src="files/github.svg" title="github: nix-bitcoin"></a></li>
-        <li><a href="https://twitter.com/nixbitcoinorg"><img src="files/twitter.svg" title="twitter: @nixbitcoinorg"></a></li>
-        <li><a href="/btcpayserver/apps/4D1Dxb5cGnXHRgNRBpoaraZKTX3i/pos"><img src="files/bitcoin.svg" title="BTCPayServer"></a></li>
-	<li><a href="devkeys.html"><img src="files/key.svg" title="Developer Keys"></a></li>
+      <li><a href="https://github.com/fort-nix/nix-bitcoin"><img src="files/github.svg" title="github: nix-bitcoin"></a></li>
+      <li><a href="https://twitter.com/nixbitcoinorg"><img src="files/twitter.svg" title="twitter: @nixbitcoinorg"></a></li>
+      <li><a href="/btcpayserver/apps/4D1Dxb5cGnXHRgNRBpoaraZKTX3i/pos"><img src="files/bitcoin.svg" title="BTCPayServer"></a></li>
+      <li><a href="devkeys.html"><img src="files/key.svg" title="Developer Keys"></a></li>
     </ul>
 
     <h3>About</h3>
@@ -77,54 +77,54 @@
     <h3>Features</h3>
 
     <ul>
-        <li>Bitcoin
-            <ul>
-                <li><a href="https://github.com/bitcoin/bitcoin">bitcoind</a> - full node with outbound connections through Tor and inbound connections through an onion service.</li>
-		<li><a href="https://github.com/bitcoin-core/HWI">bitcoin-core-hwi</a> - hardware wallet interface for bitcoin core.</li>
-            </ul>
-        </li>
-        <li>Lightning
-            <ul>
-                <li><a href="https://github.com/elementsproject/lightning">clightning</a> - outbound connections through Tor, onion service announcable.</li>
-                <li><a href="https://github.com/lightningd/plugins">clightning plugins</a> - clboss, helpme, monitor, prometheus, rebalance, summary, zmq.</li>
-                <li><a href="https://github.com/lightningnetwork/lnd">lnd</a> - outbound connections through Tor, onion service announcable.</li>
-		<li><a href="https://github.com/LN-Zap/lndconnect">lndconnect</a> - scan QR code and connect via a REST onion service.</li>
-                <li><a href="https://github.com/shesek/spark-wallet">spark-wallet</a> - minimalistic wallet GUI for c-lightning, accessible over the web or through mobile and desktop apps.</li>
-                <li><a href="https://github.com/shesek/lightning-charge">lightning-charge</a> - simple drop-in solution for accepting lightning payments with clightning.</li>
-                <li><a href="https://github.com/shesek/nanopos">nanopos</a> - simple Lightning zap point-of-sale system, powered by Lightning Charge.</li>
-                <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/recurring-donations.nix">recurring-donations</a> - module to repeatedly send lightning payments to recipients specified in the configuration.</li>
-                <li><a href="https://github.com/lightninglabs/loop">lightning-loop</a> - non-custodial off/on chain bridge.</li>
-                <li><a href="https://github.com/lightninglabs/pool">lightning-pool</a> - non-custodial batched uniform clearing-price auction for Lightning Channel Leases.</li>
-            </ul>
-        </li>
-	<li> Liquid
-	    <ul>
-		<li><a href="https://github.com/elementsproject/elements">elementsd</a> - daemon for liquid sidechain.</li>
-		<li><a href="https://github.com/Blockstream/liquid-swap">liquid swap</a> - tool to swap issued assets on liquid using confidential transactions.</li>
-	    </ul>
-        <li>Electrs
-            <ul>
-		<li><a href="https://github.com/romanz/electrs">electrs</a> - electrum server written in rust, reachable over onion service.</li>
-            </ul>
-        </li>
-        <li>BTCPayServer
-            <ul>
-		<li><a href="https://btcpayserver.org">btcpayserver</a> - self-hosted BTC payment server.</li>
-		<li><a href="https://github.com/dgarage/NBXplorer">nbxplorer</a> - autoconfigured backend for btcpayserver.</li>
-            </ul>
-        </li>
-        <li>JoinMarket
-            <ul>
-		<li><a href="https://joinmarket.me">joinmarket</a> - CoinJoin implementation with incentive structure to convince people to take part. Automatic wallet generation. Plug and play yield generator.</li>
-		<li><a href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/orderbook.md">joinmarket-obwatcher</a> - view JoinMarket orderbook as webpage.</li>
-            </ul>
-        </li>
-        <li>Other
-            <ul>
-                <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/backups.nix">backups</a> - daily duplicity backups of all your nodes important files.</li>
-                <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/netns-isolation.nix">netns-isolation</a> - isolates modules/services on a network-level in network namespaces.</li>
-            </ul>
-        </li>
+      <li>Bitcoin
+        <ul>
+          <li><a href="https://github.com/bitcoin/bitcoin">bitcoind</a> - full node with outbound connections through Tor and inbound connections through an onion service.</li>
+          <li><a href="https://github.com/bitcoin-core/HWI">bitcoin-core-hwi</a> - hardware wallet interface for bitcoin core.</li>
+        </ul>
+      </li>
+      <li>Lightning
+        <ul>
+          <li><a href="https://github.com/elementsproject/lightning">clightning</a> - outbound connections through Tor, onion service announcable.</li>
+          <li><a href="https://github.com/lightningd/plugins">clightning plugins</a> - clboss, helpme, monitor, prometheus, rebalance, summary, zmq.</li>
+          <li><a href="https://github.com/lightningnetwork/lnd">lnd</a> - outbound connections through Tor, onion service announcable.</li>
+          <li><a href="https://github.com/LN-Zap/lndconnect">lndconnect</a> - scan QR code and connect via a REST onion service.</li>
+          <li><a href="https://github.com/shesek/spark-wallet">spark-wallet</a> - minimalistic wallet GUI for c-lightning, accessible over the web or through mobile and desktop apps.</li>
+          <li><a href="https://github.com/shesek/lightning-charge">lightning-charge</a> - simple drop-in solution for accepting lightning payments with clightning.</li>
+          <li><a href="https://github.com/shesek/nanopos">nanopos</a> - simple Lightning zap point-of-sale system, powered by Lightning Charge.</li>
+          <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/recurring-donations.nix">recurring-donations</a> - module to repeatedly send lightning payments to recipients specified in the configuration.</li>
+          <li><a href="https://github.com/lightninglabs/loop">lightning-loop</a> - non-custodial off/on chain bridge.</li>
+          <li><a href="https://github.com/lightninglabs/pool">lightning-pool</a> - non-custodial batched uniform clearing-price auction for Lightning Channel Leases.</li>
+        </ul>
+      </li>
+      <li> Liquid
+        <ul>
+          <li><a href="https://github.com/elementsproject/elements">elementsd</a> - daemon for liquid sidechain.</li>
+          <li><a href="https://github.com/Blockstream/liquid-swap">liquid swap</a> - tool to swap issued assets on liquid using confidential transactions.</li>
+        </ul>
+      <li>Electrs
+        <ul>
+          <li><a href="https://github.com/romanz/electrs">electrs</a> - electrum server written in rust, reachable over onion service.</li>
+        </ul>
+      </li>
+      <li>BTCPayServer
+        <ul>
+          <li><a href="https://btcpayserver.org">btcpayserver</a> - self-hosted BTC payment server.</li>
+          <li><a href="https://github.com/dgarage/NBXplorer">nbxplorer</a> - autoconfigured backend for btcpayserver.</li>
+        </ul>
+      </li>
+      <li>JoinMarket
+        <ul>
+          <li><a href="https://joinmarket.me">joinmarket</a> - CoinJoin implementation with incentive structure to convince people to take part. Automatic wallet generation. Plug and play yield generator.</li>
+          <li><a href="https://github.com/JoinMarket-Org/joinmarket-clientserver/blob/master/docs/orderbook.md">joinmarket-obwatcher</a> - view JoinMarket orderbook as webpage.</li>
+        </ul>
+      </li>
+      <li>Other
+        <ul>
+          <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/backups.nix">backups</a> - daily duplicity backups of all your nodes important files.</li>
+          <li><a href="https://github.com/fort-nix/nix-bitcoin/blob/master/modules/netns-isolation.nix">netns-isolation</a> - isolates modules/services on a network-level in network namespaces.</li>
+        </ul>
+      </li>
     </ul>
 
     <h3>nix-bitcoin demo node</h3>
@@ -133,17 +133,17 @@
 
     <h4>clightning</h4>
     <ul>
-	<code>
-	    Public Key: 029859bb9d3cde023d43b306f688f02bf821f91790a9fa65f7ff5eb9278074eec9
-	    <br>
-	    Tor v3: yd4yhi55hcovg2ep76bngt7nqkmxp6uc2f6rvgxd3bg7fesuy263ukyd.onion:9735
-	</code>
+      <code>
+        Public Key: 029859bb9d3cde023d43b306f688f02bf821f91790a9fa65f7ff5eb9278074eec9
+        <br>
+        Tor v3: yd4yhi55hcovg2ep76bngt7nqkmxp6uc2f6rvgxd3bg7fesuy263ukyd.onion:9735
+      </code>
     </ul>
     <h4>electrs</h4>
     <ul>
-	<code>
-	    s3cqv57f3vvyrgwm7v3avkvkft5xesy27goaexkql6a55yevyi5bc3qd.onion:50001:t
-	</code>
+      <code>
+        s3cqv57f3vvyrgwm7v3avkvkft5xesy27goaexkql6a55yevyi5bc3qd.onion:50001:t
+      </code>
     </ul>
 
     <h4>JoinMarket Orderbook</h4>
