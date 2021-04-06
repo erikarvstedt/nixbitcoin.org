@@ -39,14 +39,20 @@ in {
     services.nginx = let
       hostConfig = {
         root = "/var/www";
-        locations."~ /btcpayserver/(apps|main|vendor|i|bundles|checkout|locales|imlegacy)/" = {
-          proxyPass = "http://${serviceAddress "btcpayserver"}";
-        };
         extraConfig = ''
+          # Disallow access to the admin interface
+          location ~* ^/btcpayserver/(login|register|account)(?:$|/) {
+            return 404;
+          }
+          location /btcpayserver/ {
+            proxy_pass http://${serviceAddress "btcpayserver"};
+          }
+
           location /obwatcher/ {
             proxy_pass http://${serviceAddress "joinmarket-ob-watcher"};
             rewrite /obwatcher/(.*) /$1 break;
           }
+
           add_header Onion-Location http://qvzlxbjvyrhvsuyzz5t63xx7x336dowdvt7wfj53sisuun4i4rdtbzid.onion$request_uri;
         '';
       };
