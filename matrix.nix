@@ -13,8 +13,12 @@ let
   secretsDir = config.nix-bitcoin.secretsDir;
   netns = config.nix-bitcoin.netns-isolation.netns;
 
+  inherit (config.services.matrix-synapse) dataDir;
+
   synapseAddress = netns.matrix-synapse.address;
   synapsePort = 8008;
+
+  requireSecrets = rec { wants = [ "nix-bitcoin-secrets.target" ]; after = wants; };
 in {
   imports = [ ./mail.nix ];
 
@@ -49,10 +53,19 @@ in {
     '';
   };
 
+  mailserver.loginAccounts = {
+    "synapse@nixbitcoin.org" = {
+      hashedPasswordFile = "${secretsDir}/matrix-smtp-password-hashed";
+      sendOnly = true;
+    };
+  };
+  # hashedPasswordFile is used by dovecot2
+  systemd.services.dovecot2 = requireSecrets;
+
   services.matrix-synapse = {
     enable = true;
     enable_registration = true;
-    extraConfigFiles =  [ "${secretsDir}/matrix-email" ];
+    extraConfigFiles =  [ "${dataDir}/secret-email-config" ];
     database_args = {
       database = "matrix-synapse";
       user = "matrix-synapse";
@@ -102,12 +115,30 @@ in {
     '';
   };
 
-  systemd.services.matrix-synapse.serviceConfig =
-    nbLib.defaultHardening //
-    nbLib.allowAllIPAddresses // {
-      ReadWritePaths = config.services.matrix-synapse.dataDir;
-      MemoryDenyWriteExecute = false;
-    };
+  systemd.services.matrix-synapse = let
+    emailConfig = builtins.toFile "email-config" ''
+      email:
+        smtp_host: mail.nixbitcoin.org
+        smtp_port: 587
+        smtp_user: "synapse@nixbitcoin.org"
+        notif_from: "Your Friendly %(app)s homeserver <synapse@nixbitcoin.org>"
+    '';
+  in {
+    preStart = ''
+      {
+        cat ${emailConfig}
+        echo -n '  smtp_pass: "'
+        tr -d '\n' <${secretsDir}/matrix-smtp-password
+        echo '"'
+      } > "${dataDir}/secret-email-config"
+    '';
+    serviceConfig =
+      nbLib.defaultHardening //
+      nbLib.allowAllIPAddresses // {
+        ReadWritePaths = dataDir;
+        MemoryDenyWriteExecute = false;
+      };
+  } // requireSecrets;
 
   services.nginx = {
     enable = true;
@@ -176,5 +207,7 @@ in {
     };
   };
 
-  nix-bitcoin.secrets.matrix-email.user = "matrix-synapse";
+  nix-bitcoin.secrets.matrix-smtp-password.user = "matrix-synapse";
+  # Used by dovecot2 (via the mailserver module)
+  nix-bitcoin.secrets.matrix-smtp-password-hashed.user = "root";
 }

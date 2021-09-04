@@ -12,19 +12,11 @@
     fqdn = "mail.nixbitcoin.org";
     domains = [ "nixbitcoin.org" ];
 
-    loginAccounts = {
-      "synapse@nixbitcoin.org" = {
-        hashedPassword = "$6$F8NYQa2bfia9q98$Glk4SRq/7VRDLVCoPQJVjETn.OvA1TqMNBjDJXLfbKw9q7.xux/B7QnPXOabt.l4KG2rLUMF90lUrtMZp636E.";
-        sendOnly = true;
-      };
-    };
-
     localDnsResolver = false;
 
     certificateScheme = 3;
 
     virusScanning = false;
-
   };
 
   # Enable TLSv1, needed for matrix-synapse https://github.com/matrix-org/synapse/issues/6211
