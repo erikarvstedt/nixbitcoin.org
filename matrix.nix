@@ -1,3 +1,9 @@
+# This config enables
+# - Matrix Synapse homeserver available at synapse.nixbitcoin.org
+# - Matrix Element web client available at element.nixbitcoin.org
+#
+# Inspired by https://github.com/alarsyo/nixos-config/blob/main/services/matrix.nix
+
 { config, lib, pkgs, ... }:
 
 with lib;
