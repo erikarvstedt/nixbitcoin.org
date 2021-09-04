@@ -10,6 +10,8 @@ let
   synapseAddress = netns.matrix-synapse.address;
   synapsePort = 8008;
 in {
+  imports = [ ./mail.nix ];
+
   # Limit systemd log retention for privacy reasons
   services.journald.extraConfig = ''
     MaxRetentionSec=24h
