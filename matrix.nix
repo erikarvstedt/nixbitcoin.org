@@ -21,24 +21,26 @@ in {
   };
   nix-bitcoin.secrets.matrix-email.user = "matrix-synapse";
   services.tor.relay.onionServices.matrix-synapse = nbLib.mkOnionService {
+    port = 80;
     target.addr = "169.254.1.28";
     target.port = 8008;
-    port = 80;
   };
 
   #TODO: Add database and dataDir to backup files
-  services.postgresql.enable = true;
-  services.postgresql.initialScript = pkgs.writeText "synapse-init.sql" ''
-    CREATE ROLE "matrix-synapse" WITH LOGIN PASSWORD 'synapse';
-    CREATE DATABASE "matrix-synapse" WITH OWNER "matrix-synapse"
-      TEMPLATE template0
-      LC_COLLATE = "C"
-      LC_CTYPE = "C";
-  '';
+  services.postgresql = {
+    enable = true;
+    initialScript = pkgs.writeText "synapse-init.sql" ''
+      CREATE ROLE "matrix-synapse" WITH LOGIN PASSWORD 'synapse';
+      CREATE DATABASE "matrix-synapse" WITH OWNER "matrix-synapse"
+        TEMPLATE template0
+        LC_COLLATE = "C"
+        LC_CTYPE = "C";
+    '';
+  };
 
   services.nginx = {
     enable = true;
-    # only recommendedProxySettings and recommendedGzipSettings are strictly required,
+    # Only recommendedProxySettings and recommendedGzipSettings are strictly required,
     # but the rest make sense as well
     recommendedTlsSettings = true;
     recommendedOptimisation = true;
@@ -53,26 +55,23 @@ in {
         enableACME = true;
         forceSSL = true;
 
-        locations."= /.well-known/matrix/server".extraConfig =
-          let
-            # use 443 instead of the default 8448 port to unite
-            # the client-server and server-server port for simplicity
-            server = { "m.server" = "synapse.nixbitcoin.org:443"; };
-          in ''
+        locations."= /.well-known/matrix/server".extraConfig = ''
             add_header Content-Type application/json;
-            return 200 '${builtins.toJSON server}';
+            return 200 '${builtins.toJSON {
+              # use 443 instead of the default 8448 port to unite
+              # the client-server and server-server port for simplicity
+              "m.server" = "synapse.nixbitcoin.org:443";
+            }}';
           '';
         locations."= /.well-known/matrix/client".extraConfig =
-          let
-            client = {
-              "m.homeserver" =  { "base_url" = "https://synapse.nixbitcoin.org"; };
-              "m.identity_server" =  { "base_url" = "https://vector.im"; };
-            };
           # ACAO required to allow element-web on any URL to request this json file
-          in ''
+          ''
             add_header Content-Type application/json;
             add_header Access-Control-Allow-Origin *;
-            return 200 '${builtins.toJSON client}';
+            return 200 '${builtins.toJSON {
+              "m.homeserver" =  { "base_url" = "https://synapse.nixbitcoin.org"; };
+              "m.identity_server" =  { "base_url" = "https://vector.im"; };
+            }}';
           '';
       };
 
@@ -100,14 +99,14 @@ in {
           "element.nixbitcoin.org"
         ];
 
-	root = pkgs.element-web.override {
-	  conf = {
-	    default_server_config."m.homeserver" = {
-	      "base_url" = "https://synapse.nixbitcoin.org";
-	      "server_name" = "nixbitcoin.org";
-	    };
-	  };
-	};
+	      root = pkgs.element-web.override {
+	        conf = {
+	          default_server_config."m.homeserver" = {
+	            "base_url" = "https://synapse.nixbitcoin.org";
+	            "server_name" = "nixbitcoin.org";
+	          };
+	        };
+	      };
       };
     };
   };
@@ -164,8 +163,10 @@ in {
     '';
   };
 
-  systemd.services.matrix-synapse.serviceConfig = nbLib.defaultHardening // {
-    ReadWritePaths = "/var/lib/matrix-synapse";
-    MemoryDenyWriteExecute = false;
-  } // nbLib.allowAllIPAddresses ;
+  systemd.services.matrix-synapse.serviceConfig =
+    nbLib.defaultHardening //
+    nbLib.allowAllIPAddresses // {
+      ReadWritePaths = "/var/lib/matrix-synapse";
+      MemoryDenyWriteExecute = false;
+    };
 }
