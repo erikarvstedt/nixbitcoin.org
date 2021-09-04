@@ -141,8 +141,7 @@ in {
         enableACME = true;
         forceSSL = true;
 
-        # Or do a redirect instead of the 404, or whatever is appropriate for you.
-        # But do not put a Matrix Web client here! See the Element web section below.
+        # Don't show nginx welcome page
         locations."/".extraConfig = ''
           return 404;
         '';
