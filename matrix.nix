@@ -41,7 +41,6 @@ in {
     target.port = synapsePort;
   };
 
-  #TODO: Add database and dataDir to backup files
   services.postgresql = {
     enable = true;
     initialScript = builtins.toFile "synapse-init.sql" ''
@@ -206,6 +205,20 @@ in {
       };
     };
   };
+
+  # Backups
+  services.postgresqlBackup = {
+    enable = true;
+    databases = [ "matrix-synapse" ];
+  };
+  systemd.services.duplicity = rec {
+    wants = [ "postgresqlBackup-matrix-synapse.service" ];
+    after = wants;
+  };
+  services.backups.extraFiles = [
+    dataDir
+    "${config.services.postgresqlBackup.location}/matrix-synapse.sql.gz"
+  ];
 
   nix-bitcoin.secrets.matrix-smtp-password.user = "matrix-synapse";
   # Used by dovecot2 (via the mailserver module)
