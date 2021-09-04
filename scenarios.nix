@@ -33,12 +33,22 @@ rec {
 
     networking.nat.externalInterface = mkForce "eth0";
 
-    # Disable ACME for local testing
+    ## Disable ACME for local testing
     security.acme = mkForce {};
-    services.nginx.virtualHosts."nixbitcoin.org" = {
-      enableACME = mkForce false;
-      forceSSL = mkForce false;
-    };
+    services.nginx.virtualHosts =
+      let
+        disableACME = {
+          enableACME = mkForce false;
+          forceSSL = mkForce false;
+        };
+      in {
+        "nixbitcoin.org" = disableACME;
+        "synapse.nixbitcoin.org" = disableACME;
+        "element.nixbitcoin.org" = disableACME;
+      };
+    # Disable mailserver because it has no option for fast offline cert generation.
+    # `mailserver.certificateScheme = 2` works offline but is too slow.
+    mailserver.enable = mkForce false;
 
     # When WAN is disabled, DNS bootstrapping slows down service startup by ~15 s.
     services.clightning.extraConfig = "disable-dns";
