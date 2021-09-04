@@ -19,7 +19,7 @@ in {
       connections = [ "nginx" ];
     };
   };
-  nix-bitcoin.secrets.matrix-email.user = "matrix-synapse";
+
   services.tor.relay.onionServices.matrix-synapse = nbLib.mkOnionService {
     port = 80;
     target.addr = "169.254.1.28";
@@ -37,6 +37,66 @@ in {
         LC_CTYPE = "C";
     '';
   };
+
+  services.matrix-synapse = {
+    enable = true;
+    enable_registration = true;
+    extraConfigFiles =  [ "${secretsDir}/matrix-email" ];
+    database_args = {
+      database = "matrix-synapse";
+      user = "matrix-synapse";
+      host = "/run/postgresql";
+    };
+    server_name = "nixbitcoin.org";
+    public_baseurl = "https://synapse.nixbitcoin.org";
+    listeners = [
+      {
+        port = 8008;
+        bind_address = "169.254.1.28";
+        type = "http";
+        tls = false;
+        x_forwarded = true;
+        resources = [
+          {
+            names = [ "client" "federation" ];
+            compress = false;
+          }
+        ];
+      }
+    ];
+    extraConfig = ''
+      push:
+        include_content: false
+
+      registrations_require_3pid:
+        - email
+
+      enable_metrics: false
+      report_stats: false
+
+      auto_join_rooms:
+        - "#general:nixbitcoin.org"
+
+      retention:
+        enabled: true
+        purge_jobs:
+        - longest_max_lifetime: 1w
+          interval: 12h
+
+      allow_profile_lookup_over_federation: false
+      allow_device_name_lookup_over_federation: false
+      include_profile_data_on_invite: false
+      limit_profile_requests_to_users_who_share_rooms: true
+      require_auth_for_profile_requests: true
+    '';
+  };
+
+  systemd.services.matrix-synapse.serviceConfig =
+    nbLib.defaultHardening //
+    nbLib.allowAllIPAddresses // {
+      ReadWritePaths = "/var/lib/matrix-synapse";
+      MemoryDenyWriteExecute = false;
+    };
 
   services.nginx = {
     enable = true;
@@ -110,63 +170,6 @@ in {
       };
     };
   };
-  services.matrix-synapse = {
-    enable = true;
-    enable_registration = true;
-    extraConfigFiles =  [ "${secretsDir}/matrix-email" ];
-    database_args = {
-      database = "matrix-synapse";
-      user = "matrix-synapse";
-      host = "/run/postgresql";
-    };
-    server_name = "nixbitcoin.org";
-    public_baseurl = "https://synapse.nixbitcoin.org";
-    listeners = [
-      {
-        port = 8008;
-        bind_address = "169.254.1.28";
-        type = "http";
-        tls = false;
-        x_forwarded = true;
-        resources = [
-          {
-            names = [ "client" "federation" ];
-            compress = false;
-          }
-        ];
-      }
-    ];
-    extraConfig = ''
-      push:
-        include_content: false
 
-      registrations_require_3pid:
-        - email
-
-      enable_metrics: false
-      report_stats: false
-
-      auto_join_rooms:
-        - "#general:nixbitcoin.org"
-
-      retention:
-        enabled: true
-        purge_jobs:
-        - longest_max_lifetime: 1w
-          interval: 12h
-
-      allow_profile_lookup_over_federation: false
-      allow_device_name_lookup_over_federation: false
-      include_profile_data_on_invite: false
-      limit_profile_requests_to_users_who_share_rooms: true
-      require_auth_for_profile_requests: true
-    '';
-  };
-
-  systemd.services.matrix-synapse.serviceConfig =
-    nbLib.defaultHardening //
-    nbLib.allowAllIPAddresses // {
-      ReadWritePaths = "/var/lib/matrix-synapse";
-      MemoryDenyWriteExecute = false;
-    };
+  nix-bitcoin.secrets.matrix-email.user = "matrix-synapse";
 }
