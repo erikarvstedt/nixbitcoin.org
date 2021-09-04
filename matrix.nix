@@ -163,9 +163,6 @@ in {
       "element.nixbitcoin.org" = {
         enableACME = true;
         forceSSL = true;
-        serverAliases = [
-          "element.nixbitcoin.org"
-        ];
 
 	      root = pkgs.element-web.override {
 	        conf = {
