@@ -5,7 +5,10 @@ with lib;
 let
   nbLib = config.nix-bitcoin.lib;
   secretsDir = config.nix-bitcoin.secretsDir;
+  netns = config.nix-bitcoin.netns-isolation.netns;
 
+  synapseAddress = netns.matrix-synapse.address;
+  synapsePort = 8008;
 in {
   # Limit systemd log retention for privacy reasons
   services.journald.extraConfig = ''
@@ -22,8 +25,8 @@ in {
 
   services.tor.relay.onionServices.matrix-synapse = nbLib.mkOnionService {
     port = 80;
-    target.addr = "169.254.1.28";
-    target.port = 8008;
+    target.addr = synapseAddress;
+    target.port = synapsePort;
   };
 
   #TODO: Add database and dataDir to backup files
@@ -51,8 +54,8 @@ in {
     public_baseurl = "https://synapse.nixbitcoin.org";
     listeners = [
       {
-        port = 8008;
-        bind_address = "169.254.1.28";
+        bind_address = synapseAddress;
+        port = synapsePort;
         type = "http";
         tls = false;
         x_forwarded = true;
@@ -148,7 +151,7 @@ in {
 
         # forward all Matrix API calls to the synapse Matrix homeserver
         locations."/_matrix" = {
-          proxyPass = "http://169.254.1.28:8008"; # without a trailing /
+          proxyPass = "http://${synapseAddress}:${toString synapsePort}";
         };
       };
 
