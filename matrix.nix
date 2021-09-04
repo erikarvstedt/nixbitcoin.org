@@ -97,7 +97,7 @@ in {
   systemd.services.matrix-synapse.serviceConfig =
     nbLib.defaultHardening //
     nbLib.allowAllIPAddresses // {
-      ReadWritePaths = "/var/lib/matrix-synapse";
+      ReadWritePaths = config.services.matrix-synapse.dataDir;
       MemoryDenyWriteExecute = false;
     };
 
