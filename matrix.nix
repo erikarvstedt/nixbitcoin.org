@@ -111,9 +111,7 @@ in {
     recommendedProxySettings = true;
 
     virtualHosts = {
-      # This host section can be placed on a different host than the rest,
-      # i.e. to delegate from the host being accessible as ${config.networking.domain}
-      # to another host actually running the Matrix homeserver.
+      # .well-known locations for matrix
       "nixbitcoin.org" = {
         enableACME = true;
         forceSSL = true;
