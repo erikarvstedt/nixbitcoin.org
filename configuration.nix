@@ -38,6 +38,14 @@ services = {
     enforceTor = lib.mkForce false;
   };
 
+  nix-bitcoin.pkgs = let
+    nbpkgs = (import <nix-bitcoin/pkgs> { inherit pkgs; }).modulesPkgs;
+    clightning = nbpkgs.clightning.overrideAttrs (old: rec {
+      configurePhase = "./configure --prefix=$out --enable-developer --disable-valgrind";
+    });
+  in
+    nbpkgs // { inherit clightning; };
+
   services.clightning = {
     enable = true;
     plugins.clboss.enable = true;
