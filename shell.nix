@@ -89,14 +89,21 @@ let
           curl
           jq
           lynx
+          pass
         ];
       };
     in ''
       export PATH=${devEnv}/bin:${toString ./test/cmds}:$PATH
       export root=i"${root}"
+      export PASSWORD_STORE_DIR="${root}/secrets"
 
       # Prevent garbage collection of the source that extra-container is evaluated from
       # ${extra-container.src}
+
+      # Disable generate-secrets
+      generate-secrets() {(
+        echo -e "generate-secrets disabled, because password-store encrypted secrets store is in use."
+      )}
 
       ${extraShellInitCmds pkgs}
     '';
