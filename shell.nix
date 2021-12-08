@@ -89,6 +89,7 @@ let
           curl
           jq
           lynx
+          # Used for secrets encryption
           pass
         ];
       };
