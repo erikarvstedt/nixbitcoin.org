@@ -101,10 +101,8 @@ let
       # Prevent garbage collection of the source that extra-container is evaluated from
       # ${extra-container.src}
 
-      # Disable generate-secrets
-      generate-secrets() {(
-        echo -e "generate-secrets disabled, because password-store encrypted secrets store is in use."
-      )}
+      # Disable generate-secrets which is incompatible with `pass` password storage
+      generate-secrets() { :; }
 
       ${extraShellInitCmds pkgs}
     '';
