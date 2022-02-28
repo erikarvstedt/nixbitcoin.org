@@ -1,4 +1,5 @@
 builtins.fetchTarball {
-  url = "https://github.com/nixbitcoin/nix-bitcoin/archive/1a10aa37226fd8c088ac46d6596fd2f5ee6e1c89.tar.gz";
-  sha256 = "sha256-jMDbn384591P9x6ED1wVD1wr+hKX0z4KWdUgK4+JBXQ=";
+  # https://github.com/erikarvstedt/nix-bitcoin/commits/mempool-nb-fulcrum-ea
+  url = "https://github.com/erikarvstedt/nix-bitcoin/archive/5ebf9d4a4cda05357c8bb96956c503600d3cd3fc.tar.gz";
+  sha256 = "sha256-gWPy5AzDpVp13M/RM9GWu6mLnqxAgiYjKz6NpccCFLA=";
 }
