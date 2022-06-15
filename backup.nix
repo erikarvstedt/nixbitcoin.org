@@ -7,7 +7,8 @@ let
   inherit (config.services.backups) postgresqlDatabases;
 
   postgresqlBackupDir = config.services.postgresqlBackup.location;
-  postgresqlBackupPaths = map (db: "${postgresqlBackupDir}/${db}.sql.zstd") postgresqlDatabases;
+  # TODO: Update this as soon as postgresql-back is enabled.
+  postgresqlBackupPaths = map (db: "${postgresqlBackupDir}/${db}.sql.gz") postgresqlDatabases;
   postgresqlBackupServices = map (db: "postgresqlBackup-${db}.service") postgresqlDatabases;
 
   # Use borg 1.2.1 (the latest 1.2.* release)
@@ -41,7 +42,10 @@ in
         joinmarket.dataDir
         "/var/lib/tor"
         "/var/lib/nixos"
-      ] ++ config.services.backups.extraFiles;
+      ]
+      ++ config.services.backups.extraFiles
+      ++ postgresqlBackupPaths;
+
       exclude = with config.services; [
          "${bitcoind.dataDir}/blocks"
          "${bitcoind.dataDir}/chainstate"
@@ -51,7 +55,7 @@ in
          "${liquidd.dataDir}/*/indexes"
       ];
 
-      repo =  "nixbitcoin@freak.seedhost.eu:borg-backup";
+      repo = "nixbitcoin@freak.seedhost.eu:borg-backup";
       doInit = false;
       encryption = {
         mode = "repokey";
@@ -65,7 +69,19 @@ in
         BORG_REMOTE_PATH = "/home34/nixbitcoin/.local/bin/borg";
       };
       compression = "zstd";
-      # startAt = "daily";
+      startAt = "daily";
+      prune.keep = {
+        within = "1d"; # Keep all archives from the last day
+        daily = 4;
+        weekly = 2;
+        monthly = 2;
+      };
+      # Compact (free repo storage space) every 7 days
+      postPrune = ''
+        if (( (($(date +%s) / 86400) % 7) == 0 )); then
+          borg compact
+        fi
+      '';
     };
   };
 

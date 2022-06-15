@@ -41,9 +41,9 @@ export BORG_REMOTE_PATH='$HOME/.local/bin/borg'
 export BORG_PASSCOMMAND="cat $secrets/backup-encryption-password"
 borg init --encryption=repokey --storage-quota=400G
 
-rm -rf $secrets
-
 debugCmds() {
+    borg info
+
     ssh freak.seedhost.eu 'ls -alt'
     ssh freak.seedhost.eu 'ls -al borg-backup'
     ssh freak.seedhost.eu 'ls -al borg-backup/data'
@@ -54,3 +54,5 @@ debugCmds() {
     borg-job-main ...
     borg-job-main list
 }
+
+rm -rf $secrets

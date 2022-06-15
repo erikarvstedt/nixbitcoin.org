@@ -2,6 +2,10 @@
 
 # Overview: See ./README.md
 
+# Run this script by editing regions marked with `FIXME` and by manually
+# executing sections in a shell.
+# Unattended serial execution isn't yet implemented.
+
 # Optional: Start building deployment dependencies in the background
 runBuild() {
     systemd-run --user -u build --same-dir --setenv=PATH="$PATH" \
@@ -30,13 +34,13 @@ runBuild
 
 source ./deployment-lib.sh
 
-# Set this to the server address
+# FIXME: Set this to the server address
 hostAddress=95.217.114.239
 # Remove old entry from ~/.ssh/known_hosts
 ssh-keygen -R $hostAddress
 
 # Add SSH config
-# IMPORTANT: Manually add your commands if you don't want to directly
+# FIXME: IMPORTANT: Manually add proxy commands if you don't want to directly
 # connect to the server
 echo "
 Host nborg-installer
@@ -52,9 +56,7 @@ HostName $hostAddress
 User root
 ControlMaster auto
 ControlPath /tmp/ssh-connection-%k
-ControlPersist 1h
-" >> ~/.ssh/config
-
+ControlPersist 1h" >> ~/.ssh/config
 
 # Do the initial login.
 # Check if the SSH host key fingerprint matches and enter 'yes'.
