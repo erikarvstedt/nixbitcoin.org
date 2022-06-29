@@ -13,9 +13,7 @@ if [[ ${1:-} == remount ]]; then
     zpool import -f -N rpool
     zfs set mountpoint=/mnt rpool/root
     zfs set mountpoint=/mnt/nix rpool/nix
-    zfs set mountpoint=/mnt/var/lib/db rpool/root/db
     zfs mount rpool/root
-    zfs mount rpool/root/db
     zfs mount rpool/nix
     mount ${disk1}2 /mnt/boot1
     mount ${disk2}2 /mnt/boot2
@@ -65,13 +63,6 @@ zpool create -f \
 
 zfs create -o mountpoint=/ -o canmount=on rpool/root
 zfs create -o mountpoint=/nix -o canmount=on rpool/nix
-# Create dataset optimized for RDBMS like postgres or mysql
-# https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html?#database-workloads
-zfs create -o mountpoint=/var/lib/db -o canmount=on \
-  -o recordsize=8K \
-  -o primarycache=metadata \
-  -o logbias=throughput \
-  rpool/root/db
 zfs create -o refreservation=1G -o mountpoint=none -o canmount=off rpool/reserved
 
 mkdir -p /mnt/{boot1,boot2}

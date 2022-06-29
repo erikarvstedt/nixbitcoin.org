@@ -52,12 +52,6 @@ in
     options = [ "zfsutil" ];
   };
 
-  fileSystems."/var/lib/db" = {
-    device = "rpool/root/db";
-    fsType = "zfs";
-    options = [ "zfsutil" ];
-  };
-
   fileSystems."/boot1" = {
     device = "/dev/disk/by-label/boot1";
     fsType = "vfat";
@@ -84,8 +78,4 @@ in
       { path = "/boot2"; devices = [ "/dev/sdb" ]; }
     ];
   };
-
-  # Use special database dataset
-  fileSystems."/var/lib/postgresql" = bindMount "/var/lib/db/postgresql";
-  fileSystems."/var/lib/mysql" = bindMount "/var/lib/db/mysql";
 }
