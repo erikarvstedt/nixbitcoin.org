@@ -64,6 +64,7 @@ zpool create -f \
 zfs create -o mountpoint=/ -o canmount=on rpool/root
 zfs create -o mountpoint=/nix -o canmount=on rpool/nix
 zfs create -o refreservation=1G -o mountpoint=none -o canmount=off rpool/reserved
+zfs set com.sun:auto-snapshot=true rpool/root
 
 mkdir -p /mnt/{boot1,boot2}
 mount ${disk1}2 /mnt/boot1

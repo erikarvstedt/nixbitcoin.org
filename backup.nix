@@ -4,13 +4,6 @@ with lib;
 let
   secretsDir = config.nix-bitcoin.secretsDir;
 
-  inherit (config.services.backups) postgresqlDatabases;
-
-  postgresqlBackupDir = config.services.postgresqlBackup.location;
-  # TODO: Update this as soon as postgresql-back is enabled.
-  postgresqlBackupPaths = map (db: "${postgresqlBackupDir}/${db}.sql.gz") postgresqlDatabases;
-  postgresqlBackupServices = map (db: "postgresqlBackup-${db}.service") postgresqlDatabases;
-
   # Use borg 1.2.1 (the latest 1.2.* release)
   # TODO-EXTERNAL: Remove this when nixpkgs-unstable has been updated
   nixpkgs_borg_1_2_1 = pkgs.fetchFromGitHub {
@@ -22,37 +15,67 @@ let
   pkgs_borg_1_2_1 = import nixpkgs_borg_1_2_1 { config = {}; overlays = []; };
 in
 {
-  # This configures the postgresql backups
-  services.backups.enable = true;
-  services.duplicity.enable = mkForce false;
+  services.zfs.autoSnapshot.enable = true;
 
-  nixpkgs.overlays = [
-    (_: _: { inherit (pkgs_borg_1_2_1) borgbackup; })
-  ];
+  # Only use daily, weekly, monthly ZFS snapshots
+  systemd.timers = {
+    zfs-snapshot-frequent.enable = false;
+    zfs-snapshot-hourly.enable = false;
+    # The daily snapshot is run by borgbackup-job-main.service
+    zfs-snapshot-daily.enable = false;
+  };
+
+  systemd.services.borgbackup-job-main = rec {
+    requires = [ "zfs-snapshot-daily.service" ];
+    after = requires;
+  };
 
   services.borgbackup.jobs = {
     main = {
-      paths = with config.services; [
-        bitcoind.dataDir
-        clightning.dataDir
-        clightning-rest.dataDir
-        liquidd.dataDir
-        nbxplorer.dataDir
-        btcpayserver.dataDir
-        joinmarket.dataDir
-        "/var/lib/tor"
-        "/var/lib/nixos"
-      ]
-      ++ config.services.backups.extraFiles
-      ++ postgresqlBackupPaths;
+      startAt = "daily";
 
-      exclude = with config.services; [
-         "${bitcoind.dataDir}/blocks"
-         "${bitcoind.dataDir}/chainstate"
-         "${bitcoind.dataDir}/indexes"
-         "${liquidd.dataDir}/*/blocks"
-         "${liquidd.dataDir}/*/chainstate"
-         "${liquidd.dataDir}/*/indexes"
+      preHook = ''
+        latest_daily_snap=$(
+          shopt -s nullglob
+          printf '%s\n' /.zfs/snapshot/*daily* | tail -1
+        )
+        if [[ ! $latest_daily_snap ]]; then
+          echo "Error: No daily snapshot found"
+          exit 1
+        fi
+        echo "Using $latest_daily_snap"
+        cd $latest_daily_snap
+      '';
+
+      paths = [ "var/lib" ];
+
+      exclude = [
+        "var/lib/bitcoind/blocks"
+        "var/lib/bitcoind/chainstate"
+        "var/lib/bitcoind/indexes"
+        "var/lib/liquidd/*/blocks"
+        "var/lib/liquidd/*/chainstate"
+        "var/lib/liquidd/*/indexes"
+        "var/lib/electrs"
+        "var/lib/fulcrum"
+        "var/lib/nbxplorer"
+        "var/lib/duplicity"
+        "var/lib/onion-addresses"
+
+        "var/lib/i2pd"
+        "var/lib/redis"
+        "var/lib/udisks2"
+        "var/lib/usbguard"
+
+        "var/lib/acme"
+        "var/lib/dovecot"
+        "var/lib/dhparams" # from dovecot
+        "var/lib/postfix"
+        "var/lib/rspamd"
+
+        "var/lib/machines"
+        "var/lib/private"
+        "var/lib/systemd"
       ];
 
       repo = "nixbitcoin@freak.seedhost.eu:borg-backup";
@@ -69,7 +92,7 @@ in
         BORG_REMOTE_PATH = "/home34/nixbitcoin/.local/bin/borg";
       };
       compression = "zstd";
-      startAt = "daily";
+      extraCreateArgs = "--stats"; # Print stats after backup
       prune.keep = {
         within = "1d"; # Keep all archives from the last day
         daily = 4;
@@ -85,21 +108,6 @@ in
     };
   };
 
-  # TODO:
-  # Reenable this as soon as postgresql runs faster
-  # systemd.services.borgbackup-job-main = {
-  #   wants = postgresqlBackupServices;
-  #   after = postgresqlBackupServices;
-  # };
-
-  services.postgresqlBackup = {
-    # Use native pg_dump compression
-    compression = "none";
-    pgdumpOptions =
-      "-Fc " + # Use dump format that allows multithreaded importing
-      "-Z9";   # Max compression level
-  };
-
   nix-bitcoin.secrets = {
     backup-encryption-password.user = "root";
     ssh-key-seedhost = {
@@ -107,4 +115,8 @@ in
       permissions = "600";
     };
   };
+
+  nixpkgs.overlays = [
+    (_: _: { inherit (pkgs_borg_1_2_1) borgbackup; })
+  ];
 }
