@@ -52,7 +52,7 @@ in
         "var/lib/fulcrum"
         "var/lib/nbxplorer"
         "var/lib/duplicity"
-        "var/lib/onion-addresses"
+        "var/lib/containers"
 
         "var/lib/i2pd"
         "var/lib/redis"
